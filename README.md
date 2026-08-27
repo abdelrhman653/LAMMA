@@ -1,4 +1,4 @@
-# V2 — منصة دعوات إلكترونية
+# V2 — LAMMA | منصة دعوات إلكترونية
 
 ### رحلة العميل الجديدة
 1. صفحة Designs فيها عدة تصميمات.
@@ -40,3 +40,8 @@ PAYMOB_HMAC_SECRET
 ### مهم
 هذه V2 واجهة وتجربة كاملة، لكن التخزين الحالي localStorage للعرض. للإطلاق الحقيقي:
 Firebase Auth + Firestore + Storage + Backend payment + Security Rules.
+
+
+## إصلاح Vercel
+النسخة الحالية لا تحتوي على `server.js` في الجذر، لأن وجوده بدون `package.json` واعتماد `express` كان يسبب `FUNCTION_INVOCATION_FAILED`.
+الواجهة الآن Static وتعمل مباشرة على Vercel. عند إضافة الدفع الحقيقي، يوضع الـBackend داخل `api/` مع `package.json` واعتمادات واضحة، وتظل مفاتيح الدفع السرية على الخادم فقط.
