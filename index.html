@@ -1,0 +1,39 @@
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دعوتي — اختر تصميمك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"></head><body>
+<div id="toast"></div>
+
+<main id="market" class="page">
+<header><b>♡ دعوتي</b><a id="wa" target="_blank">واتساب ↗</a></header>
+<section class="hero"><small>دعوة على مزاجك</small><h1>اختار التصميم<br><em>وشوفه كامل الأول.</em></h1><p>مش هتدخل بياناتك إلا بعد ما تشوف شكل الدعوة وتقتنع بيه. كل تصميم له معاينة كاملة.</p></section>
+<div id="filters" class="filters"><button class="active" data-f="all">الكل</button><button data-f="luxury">فاخر</button><button data-f="romantic">رومانسي</button><button data-f="classic">كلاسيك</button><button data-f="modern">مودرن</button></div>
+<section id="templates" class="templates"></section>
+<section class="steps"><div><b>01</b><strong>اختار</strong><small>عاين التصميم كامل</small></div><div><b>02</b><strong>اكتب بياناتك</strong><small>صور وموعد ومكان وموسيقى</small></div><div><b>03</b><strong>واتساب</strong><small>اتفاق ومراجعة الطلب</small></div><div><b>04</b><strong>ادفع</strong><small>بعد الدفع يتفعل الرابط</small></div></section>
+</main>
+
+<div id="modal" class="modal hidden"><div class="shade"></div><div class="modalbox"><div class="modalhead"><button id="close">×</button><div><small>معاينة كاملة</small><b id="modalTitle"></b></div><button id="modalApply" class="goldbtn">تطبيق</button></div><div id="preview"></div><div class="modalfoot"><button id="modalApply2" class="btn">تطبيق التصميم والبدء ←</button></div></div></div>
+
+<main id="builder" class="page hidden"><header><b>♡ دعوتي</b><button id="change">تغيير التصميم</button></header>
+<div class="chosen"><span id="chosenSwatch"></span><div><small>التصميم المختار</small><b id="chosenName"></b></div></div>
+<section class="builderTitle"><small>خطوة بخطوة</small><h1>جهّز دعوتك</h1><p>املأ البيانات، وبعدها راجع الطلب واتفق معنا على واتساب ثم ادفع.</p></section>
+<div class="bar"><i id="bar"></i></div>
+<form id="form">
+<section class="step active" data-s="1"><h2>01 — العروسين</h2><div class="grid"><label>اسم العريس *<input id="groom" required></label><label>اسم العروس *<input id="bride" required></label></div><label>الجملة الرئيسية<input id="headline" placeholder="يسعدنا أن نشارككم أجمل أيامنا"></label><label>رسالة ترحيب<textarea id="welcome"></textarea></label></section>
+<section class="step" data-s="2"><h2>02 — الموعد والمكان</h2><div class="grid"><label>التاريخ *<input id="date" type="date" required></label><label>الوقت *<input id="time" type="time" required></label></div><div class="grid"><label>اسم المناسبة<input id="event" value="ليلة العمر"></label><label>المدينة<input id="city"></label></div><label>القاعة / المكان *<input id="venue" required></label><label>Google Maps<input id="maps" type="url"></label></section>
+<section class="step" data-s="3"><h2>03 — الصور والموسيقى</h2><label class="upload">＋<b>صورة الغلاف</b><small>اختار صورة كبيرة</small><input id="cover" type="file" accept="image/*"><img id="coverPreview"></label><label class="upload">▦<b>معرض الصور</b><small>اختار أكثر من صورة</small><input id="gallery" type="file" accept="image/*" multiple></label><div id="galleryPreview" class="mini"></div><label class="upload">♫<b>أغنية الدعوة</b><small>اختيارية</small><input id="music" type="file" accept="audio/*"></label></section>
+<section class="step" data-s="4"><h2>04 — مميزات الدعوة</h2><div class="tog">تأكيد الحضور RSVP <input id="rsvp" type="checkbox" checked></div><div class="tog">الخريطة والاتجاهات <input id="showMaps" type="checkbox" checked></div><div class="tog">ضيف الفرح للتقويم <input id="calendar" type="checkbox" checked></div><div class="tog">تهاني الضيوف <input id="messages" type="checkbox" checked></div></section>
+<section class="step" data-s="5"><h2>05 — الرابط والتواصل</h2><label>اسم الرابط *<input id="slug" required placeholder="mohamed-fatima"></label><div class="grid"><label>اسم العميل *<input id="customer" required></label><label>رقم واتساب *<input id="phone" required placeholder="01xxxxxxxxx"></label></div><div class="notice">بعد مراجعة الطلب والاتفاق على السعر، تنتقل لخطوة الدفع. الرابط لن يتفعل قبل نجاح الدفع.</div></section>
+<section class="step" data-s="6"><h2>06 — مراجعة الطلب</h2><div id="summary" class="summary"></div><div class="paylock">🔒 <span><b>التفعيل بعد الدفع فقط</b><small>هنراجع الطلب، وبعد الاتفاق هتدفع وتستلم رابط الدعوة.</small></span></div><button id="sendWA" type="button" class="waBtn">إرسال الطلب على واتساب ↗</button></section>
+<div class="actions"><button id="back" type="button" class="btn2 hidden">رجوع</button><button id="next" type="button" class="btn">التالي ←</button><button id="review" type="submit" class="btn hidden">المراجعة والدفع 🔒</button></div>
+</form></main>
+
+<main id="payment" class="page payment hidden"><div class="card"><small>آخر خطوة</small><h1>فعّل دعوتك</h1><p>اختار طريقة الدفع بعد الاتفاق معنا.</p><div id="paySummary" class="summary"></div><button id="onlinePay" class="pay">💳 <span><b>الدفع أونلاين</b><small>سيتم تحويلك لبوابة دفع آمنة عند ربط الـBackend.</small></span>→</button><button id="manualPay" class="pay">📱 <span><b>تأكيد الدفع مع الإدارة</b><small>للطريقة التي اتفقت عليها معنا.</small></span>→</button><p class="security">لا نضع Secret Keys أو بيانات بطاقات داخل JavaScript.</p><button id="edit" class="linkbtn">← تعديل الطلب</button></div></main>
+
+<main id="success" class="page hidden"><div class="card center"><div class="ok">✓</div><small>تم الدفع والتفعيل</small><h1>دعوتك جاهزة 🎉</h1><p>ده الرابط الخاص بدعوتك.</p><div class="link"><span id="link"></span><button id="copy">نسخ</button></div><button id="open" class="btn">فتح الدعوة</button></div></main>
+
+<main id="invite" class="invite hidden"><div id="coverView" class="coverView"><div><small>أجمل حكاية تبدأ هنا</small><h1 id="names"></h1><p id="headView"></p><b id="dateView"></b><button id="enter">افتحوا دعوتنا ↓</button></div></div><div class="inviteBody"><section><small>أهلًا بكم</small><h2 id="welcomeView"></h2></section><section><small>نلتقي في</small><h2 id="eventView"></h2><div class="count"><b><i id="d">00</i>يوم</b><b><i id="h">00</i>ساعة</b><b><i id="m">00</i>دقيقة</b><b><i id="s">00</i>ثانية</b></div><a id="cal" class="btn2">📅 ضيف الفرح لتقويمك</a></section><section><small>تفاصيل المناسبة</small><h2 id="venueView"></h2><p id="locView"></p><p id="timeView"></p><a id="mapView" class="btn">الموقع على الخريطة ↗</a></section><section><small>ذكرياتنا</small><h2>لحظات نحبها</h2><div id="photos" class="photos"></div></section><section id="rsvpSec"><small>RSVP</small><h2>هتشرفونا؟</h2><input id="guest" placeholder="اسمك"><div class="counter"><button id="minus">−</button><b id="count">1</b><button id="plus">+</button></div><textarea id="guestMsg" placeholder="رسالة اختيارية"></textarea><button id="rsvpBtn" class="btn">تأكيد الحضور ♥</button></section><section id="msgSec"><small>تهاني</small><h2>اكتب كلمة للعروسين</h2><input id="msgName" placeholder="اسمك"><textarea id="msgText" placeholder="أجمل التهاني..."></textarea><button id="msgBtn" class="btn2">إرسال التهنئة</button></section></div><audio id="audio" loop></audio></main>
+
+<script src="firebase-config.js"></script><script src="app.js"></script></body></html>
