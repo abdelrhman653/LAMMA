@@ -1,15 +1,4 @@
-/*
-  إعداد Firebase للإنتاج
-  ------------------------------------------
-  1) أنشئ Firebase Web App.
-  2) فعّل Authentication (Email/Password أو Google).
-  3) فعّل Firestore Database.
-  4) فعّل Storage.
-  5) ضع إعدادات مشروعك هنا.
-  6) في app.js استبدل localStorage بطبقة Firebase عند النشر الحقيقي.
-
-  مهم: لا تضع service-account private key في المتصفح.
-*/
+// ضع بيانات Firebase هنا من Firebase Console > Project settings > Your apps > Web app
 window.FIREBASE_CONFIG = {
   apiKey: "",
   authDomain: "",
@@ -17,4 +6,13 @@ window.FIREBASE_CONFIG = {
   storageBucket: "",
   messagingSenderId: "",
   appId: ""
+};
+
+// اكتب UID حساب الأدمن بعد إنشائه، ثم أنشئ document بنفس الـ UID داخل admins.
+window.ADMIN_UID = "PUT_ADMIN_UID_HERE";
+
+// بيانات التواصل والدفع
+window.CONTACT = {
+  whatsapp: "201555898862",
+  wallet: "01128685766"
 };

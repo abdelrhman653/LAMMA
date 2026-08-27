@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn(){ return request.auth != null; }
+    function admin(){ return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /users/{uid} {
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow read, update: if signedIn() && request.auth.uid == uid;
+      allow delete: if false;
+    }
+    match /payments/{id} {
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && request.resource.data.status == 'pending';
+      allow read: if admin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update: if admin();
+      allow delete: if false;
+    }
+    match /invitations/{slug} {
+      allow read: if true;
+      allow create, update: if signedIn() && request.resource.data.ownerId == request.auth.uid && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.paymentStatus == 'approved';
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+      match /rsvps/{id} {
+        allow create: if true;
+        allow read: if signedIn() && get(/databases/$(database)/documents/invitations/$(slug)).data.ownerId == request.auth.uid || admin();
+        allow update, delete: if false;
+      }
+    }
+  }
+}

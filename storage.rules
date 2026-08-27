@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn(){ return request.auth != null; }
+    function owner(uid){ return signedIn() && request.auth.uid == uid; }
+    match /payment-proofs/{uid}/{allPaths=**} {
+      allow write: if owner(uid) && request.resource.size < 8 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow read: if owner(uid) || firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.active == true;
+    }
+    match /invitations/{uid}/{allPaths=**} {
+      allow write: if owner(uid);
+      allow read: if true;
+    }
+  }
+}
