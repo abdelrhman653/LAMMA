@@ -1,14 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
 
 const cfg = window.FIREBASE_CONFIG || {};
-const configured = !!(cfg.apiKey && cfg.authDomain && cfg.projectId && cfg.storageBucket && cfg.appId);
+const configured = !!(cfg.apiKey && cfg.authDomain && cfg.projectId && cfg.appId);
+const cloudCfg = window.CLOUDINARY_CONFIG || {};
+const cloudConfigured = !!(cloudCfg.cloudName && cloudCfg.uploadPreset);
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const CONTACT = window.CONTACT || {whatsapp:"201555898862",wallet:"01128685766"};
-let auth, db, storage, currentUser, unsubscribeInvites;
+let auth, db, currentUser, unsubscribeInvites;
 let state = { step:1, theme:"noir", coverData:null, galleryFiles:[], musicFile:null, paymentProofFile:null, userDoc:null };
 
 const builder = $("#builder"), result = $("#result"), invitation = $("#invitation"), authView=$("#authView"), paymentView=$("#paymentView"), dashboardView=$("#dashboardView");
@@ -18,7 +19,7 @@ function wa(number,text){return `https://wa.me/${number}?text=${encodeURICompone
 
 function firebaseInit(){
   if(!configured){ show(authView); $("#firebaseWarning").classList.remove("hidden"); return false; }
-  const app=initializeApp(cfg); auth=getAuth(app); db=getFirestore(app); storage=getStorage(app); return true;
+  const app=initializeApp(cfg); auth=getAuth(app); db=getFirestore(app); return true;
 }
 
 async function userDoc(uid){const s=await getDoc(doc(db,"users",uid));return s.exists()?s.data():null}
@@ -37,9 +38,16 @@ $("#dashboardLogoutBtn").onclick=()=>signOut(auth);
 function authError(e){const m={"auth/email-already-in-use":"الإيميل مستخدم بالفعل","auth/invalid-credential":"الإيميل أو كلمة المرور غير صحيحة","auth/invalid-email":"الإيميل غير صحيح","auth/weak-password":"كلمة المرور ضعيفة","auth/network-request-failed":"مشكلة في الاتصال"};return m[e.code]||"حصل خطأ، حاول تاني"}
 
 async function renderAccount(user){
-  currentUser=user; state.userDoc=await ensureUserDoc(user); $("#accountName").textContent=user.displayName||user.email; $("#accountEmail").textContent=user.email;
-  if(state.userDoc.paymentStatus==="approved"){show(dashboardView); loadInvites();}
-  else {show(paymentView); renderPaymentStatus();}
+  currentUser=user;
+  state.userDoc=await ensureUserDoc(user);
+  $("#accountName").textContent=user.displayName||user.email;
+  $("#accountEmail").textContent=user.email;
+
+  // تجربة المنصة المطلوبة: بعد التسجيل يدخل المستخدم مباشرة إلى إنشاء الدعوة،
+  // بدون إجباره على الدفع أو المرور بشاشة أخرى أولاً.
+  // الدفع يظل موجودًا في المشروع ويمكن تفعيله لاحقًا من لوحة الإدارة إذا أردت.
+  show(dashboardView);
+  loadInvites();
 }
 function renderPaymentStatus(){
   const s=state.userDoc?.paymentStatus||"unpaid";
@@ -61,9 +69,9 @@ $("#paymentForm").onsubmit=async e=>{
   if(file.size>8*1024*1024){toast("صورة الإثبات لازم تكون أقل من 8MB");return}
   try{
     $("#paymentSubmit").disabled=true; $("#paymentSubmit").textContent="جاري الإرسال...";
-    const path=`payment-proofs/${currentUser.uid}/${Date.now()}-${file.name.replace(/[^\w.\-]/g,"_")}`;
-    const sr=ref(storage,path); await uploadBytes(sr,file); const proofUrl=await getDownloadURL(sr);
-    await addDoc(collection(db,"payments"),{uid:currentUser.uid,email:currentUser.email,name:currentUser.displayName||"",amount,reference:refNo,proofUrl,proofPath:path,status:"pending",createdAt:serverTimestamp()});
+    if(!cloudConfigured){toast("لازم تضيف Cloudinary Cloud Name و Upload Preset");return}
+    const proofUrl=await uploadFile(file,`lamma/payment-proofs/${currentUser.uid}`);
+    await addDoc(collection(db,"payments"),{uid:currentUser.uid,email:currentUser.email,name:currentUser.displayName||"",amount,reference:refNo,proofUrl,status:"pending",createdAt:serverTimestamp()});
     await updateDoc(doc(db,"users",currentUser.uid),{paymentStatus:"pending",lastPaymentAt:serverTimestamp()}); state.userDoc=await userDoc(currentUser.uid); renderPaymentStatus(); toast("اترسل للمراجعة بنجاح");
   }catch(err){console.error(err);toast("تعذر إرسال الإثبات، راجع إعداد Firebase")}
   finally{$("#paymentSubmit").disabled=false;$("#paymentSubmit").textContent="إرسال للمراجعة"}
@@ -77,7 +85,18 @@ function requiredOk(){const active=$(`.form-step[data-step="${state.step}"]`);fo
 $("#nextBtn").onclick=()=>{if(requiredOk()&&state.step<6)setStep(state.step+1)};$("#backBtn").onclick=()=>{if(state.step>1)setStep(state.step-1)};
 $$('.theme-card').forEach(c=>c.onclick=()=>{$$('.theme-card').forEach(x=>x.classList.remove('selected'));c.classList.add('selected');state.theme=c.dataset.theme});
 $("#cover").onchange=e=>state.coverData=e.target.files[0];$("#gallery").onchange=e=>{state.galleryFiles=[...e.target.files].slice(0,20);$("#galleryPreview").innerHTML=state.galleryFiles.map(f=>`<span>${escapeHtml(f.name)}</span>`).join('')};$("#music").onchange=e=>state.musicFile=e.target.files[0];
-async function uploadFile(file,path){const r=ref(storage,path);await uploadBytes(r,file);return getDownloadURL(r)}
+async function uploadFile(file,folder){
+  if(!cloudConfigured) throw new Error("Cloudinary is not configured");
+  const endpoint=`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudCfg.cloudName)}/auto/upload`;
+  const form=new FormData();
+  form.append("file",file);
+  form.append("upload_preset",cloudCfg.uploadPreset);
+  if(folder) form.append("folder",folder);
+  const response=await fetch(endpoint,{method:"POST",body:form});
+  const data=await response.json();
+  if(!response.ok || !data.secure_url) throw new Error(data.error?.message||"Cloudinary upload failed");
+  return data.secure_url;
+}
 async function collectAndPublish(){
   const slug=$("#slug").value.trim().toLowerCase().replace(/[^a-z0-9\u0600-\u06ff-]+/g,"-").replace(/^-|-$/g,"");
   if(!slug){$("#slug").focus();toast("اكتب اسم للرابط");return}
@@ -87,9 +106,22 @@ async function collectAndPublish(){
     if(state.coverData)base.coverUrl=await uploadFile(state.coverData,`invitations/${currentUser.uid}/${slug}/cover-${Date.now()}`);
     if(state.galleryFiles.length)base.galleryUrls=await Promise.all(state.galleryFiles.map((f,i)=>uploadFile(f,`invitations/${currentUser.uid}/${slug}/gallery-${Date.now()}-${i}`)));
     if(state.musicFile)base.musicUrl=await uploadFile(state.musicFile,`invitations/${currentUser.uid}/${slug}/music-${Date.now()}`);
+    // نمنع الكتابة فوق دعوة شخص آخر بنفس الرابط.
+    const existing=await getDoc(doc(db,"invitations",slug));
+    if(existing.exists() && existing.data().ownerId!==currentUser.uid){
+      throw new Error("الرابط مستخدم بالفعل، اختار اسم رابط مختلف");
+    }
     await setDoc(doc(db,"invitations",slug),base,{merge:true});
-    const url=`${location.origin}${location.pathname}?invite=${encodeURIComponent(slug)}`;$("#generatedLink").textContent=url;show(result);toast("الدعوة اتجهزت");
-  }catch(e){console.error(e);toast(e.code==="storage/unauthorized"?"صلاحيات Storage محتاجة ضبط":"حصل خطأ أثناء النشر")}
+    const url=`${location.origin}${location.pathname}?invite=${encodeURIComponent(slug)}`;
+    $("#generatedLink").textContent=url;
+    show(result);
+    toast("الدعوة اتجهزت والرابط جاهز");
+  }catch(e){
+    console.error(e);
+    if(e.message?.includes("Cloudinary")) toast("تأكد من إعداد Cloudinary وUpload Preset");
+    else if(e.message?.includes("الرابط مستخدم")) toast(e.message);
+    else toast("حصل خطأ أثناء النشر، حاول مرة تانية");
+  }
   finally{$("#publishBtn").disabled=false;$("#publishBtn").textContent="إنشاء الدعوة ✦"}
 }
 $("#inviteForm").onsubmit=e=>{e.preventDefault();if(requiredOk())collectAndPublish()};

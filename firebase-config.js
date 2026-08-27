@@ -1,4 +1,5 @@
 // ضع بيانات Firebase هنا من Firebase Console > Project settings > Your apps > Web app
+// لا تحتاج إلى storageBucket لأن المشروع يستخدم Cloudinary للملفات.
 window.FIREBASE_CONFIG = {
   apiKey: "",
   authDomain: "",
